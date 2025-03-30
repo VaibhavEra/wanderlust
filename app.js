@@ -7,6 +7,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError");
+const { listingSchema } = require("./schema");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -62,11 +63,12 @@ app.get(
 //Create Route
 app.post(
   "/listings",
+  validateListing,
   wrapAsync(async (req, res) => {
     // let {title, description, image, price, country, location} = req.body
-    if (!req.body.listing) {
-      throw new ExpressError(400, "Send Valid data for listing");
-    }
+    // if (!req.body.listing) {
+    //   throw new ExpressError(400, "Send Valid data for listing");
+    // }
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
@@ -86,11 +88,9 @@ app.get(
 //Update Route
 app.put(
   "/listings/:id",
+  validateListing,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    if (!req.body.listing) {
-      throw new ExpressError(400, "Send Valid data for listing");
-    }
     await Listing.findByIdAndUpdate(id, { ...req.body.listing });
     res.redirect(`/listings/${id}`);
   })
@@ -116,6 +116,17 @@ app.use((err, req, res, next) => {
   // res.status(statusCode).send(message);
   res.status(statusCode).render("./listings/error.ejs", { message });
 });
+
+//Validate Listing
+const validateListing = (req, res, next) => {
+  let { error } = listingSchema.validate(req.body);
+  if (error) {
+    let errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(400, errMsg);
+  } else {
+    next();
+  }
+};
 
 // app.get("/testListing", async (req, res) => {
 //   let sampleListing = new Listing({
