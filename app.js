@@ -7,7 +7,8 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError");
-const { listingSchema } = require("./schema");
+const { listingSchema, reviewSchema } = require("./schema");
+const Review = require("./models/review");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -47,6 +48,17 @@ const validateListing = (req, res, next) => {
   }
 };
 
+//Validate review
+const validateReview = (req, res, next) => {
+  let { error } = reviewSchema.validate(req.body);
+  if (error) {
+    let errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(400, errMsg);
+  } else {
+    next();
+  }
+};
+
 //Index Route
 app.get(
   "/listings",
@@ -56,22 +68,22 @@ app.get(
   })
 );
 
-//New Route
+//New Route for adding a listing
 app.get("/listings/new", (req, res) => {
   res.render("./listings/new.ejs");
 });
 
-//Show Route
+//Show Route for showing a listing
 app.get(
   "/listings/:id",
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id).populate("reviews");
     res.render("./listings/show.ejs", { listing });
   })
 );
 
-//Create Route
+//Create Route for listing
 app.post(
   "/listings",
   validateListing,
@@ -86,7 +98,7 @@ app.post(
   })
 );
 
-//Edit Route
+//Edit Route for listing
 app.get(
   "/listings/:id/edit",
   wrapAsync(async (req, res) => {
@@ -96,7 +108,7 @@ app.get(
   })
 );
 
-//Update Route
+//Update Route for listing
 app.put(
   "/listings/:id",
   validateListing,
@@ -107,17 +119,34 @@ app.put(
   })
 );
 
-//Delete Route
+//Delete Route for listing
 app.delete(
   "/listings/:id",
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    await Listing.findByIdAndDelete(id, { id });
+    await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
   })
 );
 
-//Standard response route
+//Create Route for reviews
+app.post(
+  "/listings/:id/reviews",
+  validateReview,
+  wrapAsync(async (req, res) => {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+
+    listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+
+    res.redirect(`/listings/${listing._id}`);
+  })
+);
+
+//Standard response route for listing
 app.all("*", (req, res, next) => {
   next(new ExpressError(404, "Page Not Found!"));
 });
