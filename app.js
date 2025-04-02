@@ -5,6 +5,8 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
+const session = require("express-session");
+const flash = require("connect-flash");
 
 const listings = require("./routes/listing.js");
 const reviews = require("./routes/review.js");
@@ -32,13 +34,29 @@ app.listen(8080, () => {
   console.log("Server is listening to port 8080");
 });
 
+//Root Path
 app.get("/", (req, res) => {
   res.send("Root is working");
 });
 
+const sessionOptions = {
+  secret: "mysuper",
+  resave: false,
+  saveUninitialized: true,
+};
+
+app.use(session(sessionOptions));
+app.use(flash());
+
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+
+  next();
+});
+
 //route for listings
 app.use("/listings", listings);
-
 //route for reviews
 app.use("/listings/:id/reviews", reviews);
 
@@ -47,6 +65,7 @@ app.all("*", (req, res, next) => {
   next(new ExpressError(404, "Page Not Found!"));
 });
 
+//Error Middleware
 app.use((err, req, res, next) => {
   let { statusCode = 500, message = "Something Went Wrong!" } = err;
   // res.status(statusCode).send(message);
