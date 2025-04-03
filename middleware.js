@@ -1,5 +1,6 @@
 const { listingSchema, reviewSchema } = require("./schema.js");
-const ExpressError = require("../utils/ExpressError.js");
+const ExpressError = require("./utils/ExpressError.js");
+const Listing = require("./models/listing.js");
 
 //Check Authentication
 module.exports.isLoggedIn = (req, res, next) => {
@@ -40,4 +41,15 @@ module.exports.validateReview = (req, res, next) => {
   } else {
     next();
   }
+};
+
+//Validate Owner
+module.exports.isOwner = async (req, res, next) => {
+  let { id } = req.params;
+  let listing = await Listing.findById(id);
+  if (!listing.owner._id.equals(res.locals.currentUser._id)) {
+    req.flash("error", "You are not the Owner of this listing");
+    return res.redirect(`/listings/${id}`);
+  }
+  next();
 };
