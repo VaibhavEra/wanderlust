@@ -15,10 +15,15 @@ router.post(
     try {
       let { username, email, password } = req.body;
       const newUser = new User({ email, username });
-      await User.register(newUser, password);
+      const registeredUser = await User.register(newUser, password);
 
-      req.flash("success", "Welcome to Wanderlust!");
-      res.redirect("/listings");
+      req.login(registeredUser, (error) => {
+        if (error) {
+          return next(error);
+        }
+        req.flash("success", "Welcome to Wanderlust!");
+        res.redirect("/listings");
+      });
     } catch (err) {
       req.flash("error", err.message);
       res.redirect("/signup");
