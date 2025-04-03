@@ -33,6 +33,7 @@ router.get("/login", (req, res) => {
 
 router.post(
   "/login",
+  //middleware to check if a user exists
   passport.authenticate("local", {
     failureRedirect: "/login",
     failureFlash: true,
