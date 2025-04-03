@@ -54,17 +54,11 @@ const sessionOptions = {
   },
 };
 
+//session initialization
 app.use(session(sessionOptions));
 app.use(flash());
 
-app.use((req, res, next) => {
-  res.locals.success = req.flash("success");
-  res.locals.error = req.flash("error");
-
-  next();
-});
-
-//Passport Authentication
+//Passport session initialization
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate())); // use static authenticate method of model in LocalStrategy
@@ -72,6 +66,15 @@ passport.use(new LocalStrategy(User.authenticate())); // use static authenticate
 // use static serialize and deserialize of model for passport session support
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+//Middleware setting res.locals
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  res.locals.currentUser = req.user;
+
+  next();
+});
 
 //route for listings
 app.use("/listings", listingsRouter);
