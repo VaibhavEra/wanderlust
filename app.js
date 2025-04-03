@@ -64,6 +64,15 @@ app.use((req, res, next) => {
   next();
 });
 
+//Passport Authentication
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate())); // use static authenticate method of model in LocalStrategy
+
+// use static serialize and deserialize of model for passport session support
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 //route for listings
 app.use("/listings", listingsRouter);
 //route for reviews
@@ -82,12 +91,3 @@ app.use((err, req, res, next) => {
   // res.status(statusCode).send(message);
   res.status(statusCode).render("./listings/error.ejs", { message });
 });
-
-//Passport
-app.use(passport.initialize());
-app.use(passport.session());
-passport.use(new LocalStrategy(User.authenticate())); // use static authenticate method of model in LocalStrategy
-
-// use static serialize and deserialize of model for passport session support
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
