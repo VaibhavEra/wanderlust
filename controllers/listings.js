@@ -2,11 +2,11 @@ const Listing = require("../models/listing.js");
 
 module.exports.index = async (req, res) => {
   const allListings = await Listing.find({});
-  res.render("./listings/index.ejs", { allListings });
+  res.render("listings/index", { allListings });
 };
 
 module.exports.renderNewForm = (req, res) => {
-  res.render("./listings/new.ejs");
+  res.render("listings/new");
 };
 
 module.exports.showListing = async (req, res) => {
@@ -19,7 +19,7 @@ module.exports.showListing = async (req, res) => {
     req.flash("error", "Listing you requested for does not exist!");
     res.redirect("/listings");
   }
-  res.render("./listings/show.ejs", { listing });
+  res.render("listings/show", { listing });
 };
 
 module.exports.createListing = async (req, res) => {
@@ -48,7 +48,7 @@ module.exports.renderEditForm = async (req, res) => {
     res.redirect("/listings");
   }
   req.flash("success", "Listing Edited Successfully!");
-  res.render("./listings/edit.ejs", { listing });
+  res.render("listings/edit", { listing });
 };
 
 module.exports.updateListing = async (req, res) => {
