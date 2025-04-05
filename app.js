@@ -45,9 +45,9 @@ app.listen(8080, () => {
 });
 
 //Root Path
-// app.get("/", (req, res) => {
-//   res.send("Root is working");
-// });
+app.get("/", (req, res) => {
+  res.redirect("/listings");
+});
 
 const store = MongoStore.create({
   mongoUrl: db_url,
