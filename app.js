@@ -41,9 +41,9 @@ app.listen(8080, () => {
 });
 
 //Root Path
-app.get("/", (req, res) => {
-  res.send("Root is working");
-});
+// app.get("/", (req, res) => {
+//   res.send("Root is working");
+// });
 
 const sessionOptions = {
   secret: "mysuper",
