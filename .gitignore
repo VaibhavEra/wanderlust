@@ -1,8 +1,5 @@
 # Dependency directory
 node_modules/
 
-# Initialization files
-init/
-
 # env
 .env
